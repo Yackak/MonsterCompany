@@ -1,6 +1,6 @@
 let player;
 let cursors;
-let background;
+let background_office;
 let backgroundWidth;
 let backgroundHeight;
 let maxX;
