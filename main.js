@@ -39,7 +39,7 @@ function preload() {
 
 function create() {
   // 첫 번째 배경 이미지 로드
-  background = this.add.image(0, 0, 'background').setOrigin(0, 0);
+  background = this.add.image(0, 0, 'background_office').setOrigin(0, 0);
 
   // 배경 크기 계산
   backgroundWidth = background.displayWidth;
@@ -128,7 +128,7 @@ function update() {
 
     // 배경 전환 처리
     if (player.x >= background.displayWidth - 100) {  // 캐릭터가 오른쪽 끝에 도달했을 때
-
+      player.setVelocityX(0);  // 배경 끝에 도달하면 이동 멈춤
       //전투 장면 전환 필요
       
     }
