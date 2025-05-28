@@ -27,7 +27,7 @@ const config = {
 const game = new Phaser.Game(config);
 
 function preload() {
-  this.load.image('background', 'assets/background.png');  // 첫 번째 배경
+  this.load.image('background_office', 'assets/background_office.png');  // 첫 번째 배경
 
   for (let i = 0; i <= 16; i++) {
     this.load.image(`standing_${i}`, `assets/standing_${i}.png`);
@@ -39,18 +39,18 @@ function preload() {
 
 function create() {
   // 첫 번째 배경 이미지 로드
-  background = this.add.image(0, 0, 'background_office').setOrigin(0, 0);
+  background_office = this.add.image(0, 0, 'background_office').setOrigin(0, 0);
 
   // 배경 크기 계산
-  backgroundWidth = background.displayWidth;
-  backgroundHeight = background.displayHeight;
+  backgroundWidth = background_office.displayWidth;
+  backgroundHeight = background_office.displayHeight;
 
   // 배경 비율 계산
   const aspectRatio = backgroundWidth / backgroundHeight;
   const newHeight = 692;
   const newWidth = newHeight * aspectRatio;
 
-  background.setDisplaySize(newWidth, newHeight);
+  background_office.setDisplaySize(newWidth, newHeight);
 
   // 배경의 최대 X 위치 설정
   maxX = newWidth * 2;
@@ -64,7 +64,7 @@ function create() {
   player.setCollideWorldBounds(true);
 
   // 플레이어를 맵 가장 아래에 위치시키기
-  player.y = background.displayHeight - player.displayHeight / 2;
+  player.y = background_office.displayHeight - player.displayHeight / 2;
 
   cursors = this.input.keyboard.createCursorKeys();
 
@@ -110,7 +110,7 @@ function create() {
     const newHeight = 692;
     const newWidth = newHeight * aspectRatio;
     game.scale.resize(window.innerWidth, 692);
-    background.setDisplaySize(newWidth, newHeight);
+    background_office.setDisplaySize(newWidth, newHeight);
     this.physics.world.setBounds(0, 0, maxX, newHeight);
   });
 }
@@ -126,7 +126,7 @@ function update() {
     player.setFlipX(true);
 
     // 배경 끝에 도달 시 전투 화면 전환
-    if (player.x >= background.displayWidth - 100) {
+    if (player.x >= background_office.displayWidth - 100) {
       player.setVelocityX(0);
       enterBattleScene(); // 전투로 진입
     }
