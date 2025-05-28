@@ -47,7 +47,7 @@ function create() {
 
   // 배경 비율 계산
   const aspectRatio = backgroundWidth / backgroundHeight;
-  const newHeight = 692;
+  const newHeight = 750;
   const newWidth = newHeight * aspectRatio;
 
   background_office.setDisplaySize(newWidth, newHeight);
@@ -104,15 +104,6 @@ function create() {
 
   this.cameras.main.startFollow(player);
   this.cameras.main.setBounds(0, 0, newWidth, newHeight);  // 카메라 범위 설정
-
-  // 리사이즈 대응
-  window.addEventListener('resize', () => {
-    const newHeight = 692;
-    const newWidth = newHeight * aspectRatio;
-    game.scale.resize(window.innerWidth, 692);
-    background_office.setDisplaySize(newWidth, newHeight);
-    this.physics.world.setBounds(0, 0, maxX, newHeight);
-  });
 }
 
 function update() {
