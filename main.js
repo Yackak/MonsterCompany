@@ -27,7 +27,7 @@ const config = {
 const game = new Phaser.Game(config);
 
 function preload() {
-  this.load.image('background_office', 'assets/background_office.png');  // 첫 번째 배경
+  this.load.image('background_office', 'assets/background.png');  // 첫 번째 배경
 
   for (let i = 0; i <= 16; i++) {
     this.load.image(`standing_${i}`, `assets/standing_${i}.png`);
