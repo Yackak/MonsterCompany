@@ -116,7 +116,6 @@ function create() {
 }
 
 function update() {
-  // 캐릭터 이동
   if (cursors.left.isDown) {
     player.setVelocityX(-640);
     player.anims.play('walk', true);
@@ -126,14 +125,30 @@ function update() {
     player.anims.play('walk', true);
     player.setFlipX(true);
 
-    // 배경 전환 처리
-    if (player.x >= background.displayWidth - 100) {  // 캐릭터가 오른쪽 끝에 도달했을 때
-      player.setVelocityX(0);  // 배경 끝에 도달하면 이동 멈춤
-      //전투 장면 전환 필요
-      
+    // 배경 끝에 도달 시 전투 화면 전환
+    if (player.x >= background.displayWidth - 100) {
+      player.setVelocityX(0);
+      enterBattleScene(); // 전투로 진입
     }
   } else {
     player.setVelocityX(0);
     player.anims.play('idle', true);
   }
+}
+
+function enterBattleScene() {
+  // 기존 Phaser 게임 제거
+  game.destroy(true);
+
+  // CSS 전환
+  const styleTag = document.getElementById('page-style');
+  styleTag.href = 'battle.css';
+
+  // HTML 초기화
+  document.getElementById('game-container').innerHTML = '';
+
+  // 스크립트 동적 로딩
+  const script = document.createElement('script');
+  script.src = 'battle.js';
+  document.body.appendChild(script);
 }
