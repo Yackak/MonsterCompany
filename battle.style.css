@@ -1,0 +1,11 @@
+body {
+  background-color: black;
+  margin: 0;
+  overflow: hidden;
+}
+
+#game-container {
+  width: 100%;
+  height: 692px;
+  border: 4px solid red;
+}
