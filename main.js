@@ -13,7 +13,7 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: { y: 0 },
+      gravity: { y: 0 }, // 평소엔 중력 없음
       debug: false
     }
   },
@@ -27,7 +27,7 @@ const config = {
 const game = new Phaser.Game(config);
 
 function preload() {
-  this.load.image('background_office', 'assets/background_office.png');  // 첫 번째 배경
+  this.load.image('background_office', 'assets/background_office.png'); // 배경
 
   for (let i = 0; i <= 16; i++) {
     this.load.image(`standing_${i}`, `assets/standing_${i}.png`);
@@ -38,37 +38,32 @@ function preload() {
 }
 
 function create() {
-  // 첫 번째 배경 이미지 로드
+  // 배경 이미지 추가
   background_office = this.add.image(0, 0, 'background_office').setOrigin(0, 0);
 
-  // 배경 크기 계산
+  // 배경 크기 계산 및 리사이즈
   backgroundWidth = background_office.displayWidth;
   backgroundHeight = background_office.displayHeight;
 
-  // 배경 비율 계산
   const aspectRatio = backgroundWidth / backgroundHeight;
   const newHeight = 750;
   const newWidth = newHeight * aspectRatio;
 
   background_office.setDisplaySize(newWidth, newHeight);
-
-  // 배경의 최대 X 위치 설정
   maxX = newWidth * 2;
 
-  // 월드 크기 설정
   this.physics.world.setBounds(0, 0, maxX, newHeight);
 
-  // 플레이어 생성
-  player = this.physics.add.sprite(displayWidth - 100, 600, 'standing_0');
+  // 플레이어 생성 (오른쪽 끝)
+  player = this.physics.add.sprite(maxX - 100, 600, 'standing_0');
   player.setScale(0.2);
   player.setCollideWorldBounds(true);
-
-  // 플레이어를 맵 가장 아래에 위치시키기
   player.y = background_office.displayHeight - 100 - player.displayHeight / 2;
 
   cursors = this.input.keyboard.createCursorKeys();
+  this.sceneTransitioning = false; // 중복 전환 방지
 
-  // 달리기 애니메이션
+  // 애니메이션
   this.anims.create({
     key: 'walk',
     frames: [
@@ -85,7 +80,6 @@ function create() {
     repeat: -1
   });
 
-  // 정지 애니메이션
   this.anims.create({
     key: 'idle',
     frames: [
@@ -103,24 +97,33 @@ function create() {
   });
 
   this.cameras.main.startFollow(player);
-  this.cameras.main.setBounds(0, 0, newWidth, newHeight);  // 카메라 범위 설정
+  this.cameras.main.setBounds(0, 0, newWidth, newHeight);
 }
 
 function update() {
+  if (this.sceneTransitioning) return;
+
   if (cursors.left.isDown) {
     player.setVelocityX(-640);
     player.anims.play('walk', true);
     player.setFlipX(false);
+
+    // 왼쪽 끝 도달 시 떨어지며 전투 전환
+    if (player.x <= 50) {
+      this.sceneTransitioning = true;
+      player.setVelocityX(0);
+      this.physics.world.gravity.y = 1000; // 중력 활성화
+      player.setCollideWorldBounds(false); // 바닥 뚫고 떨어지게
+
+      this.time.delayedCall(1000, () => {
+        enterBattleScene();
+      });
+    }
+
   } else if (cursors.right.isDown) {
     player.setVelocityX(640);
     player.anims.play('walk', true);
     player.setFlipX(true);
-
-    // 배경 끝에 도달 시 전투 화면 전환
-    if (player.x <= 100) {
-      player.setVelocityX(0);
-      enterBattleScene(); // 전투로 진입
-    }
   } else {
     player.setVelocityX(0);
     player.anims.play('idle', true);
@@ -128,17 +131,13 @@ function update() {
 }
 
 function enterBattleScene() {
-  // 기존 Phaser 게임 제거
   game.destroy(true);
 
-  // CSS 전환
   const styleTag = document.getElementById('page-style');
   styleTag.href = 'battle.css';
 
-  // HTML 초기화
   document.getElementById('game-container').innerHTML = '';
 
-  // 스크립트 동적 로딩
   const script = document.createElement('script');
   script.src = 'battle.js';
   document.body.appendChild(script);
