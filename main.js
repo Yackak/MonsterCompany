@@ -3,7 +3,6 @@ let cursors;
 let background_office;
 let backgroundWidth;
 let backgroundHeight;
-let maxX;
 
 const config = {
   type: Phaser.AUTO,
@@ -50,16 +49,14 @@ function create() {
   // 배경 크기 및 월드 설정
   backgroundWidth = newWidth;
   backgroundHeight = newHeight;
-  maxX = newWidth * 2;
-  this.physics.world.setBounds(0, 0, maxX, newHeight);
+  this.physics.world.setBounds(0, 0, backgroundWidth, newHeight);
 
   // 플레이어 생성 (오른쪽 끝)
   player = this.physics.add.sprite(backgroundWidth - 100, backgroundHeight - 50, 'standing_0');
-  player.setScale(0.2);
+  player.setScale(0.3);
   player.setCollideWorldBounds(true);
 
   // 디버깅용
-  console.log('maxX:', maxX);
   console.log('player.x:', player.x, 'player.y:', player.y);
 
   cursors = this.input.keyboard.createCursorKeys();
@@ -101,7 +98,7 @@ function create() {
 
   // 카메라
   this.cameras.main.startFollow(player);
-  this.cameras.main.setBounds(0, 0, maxX, newHeight);
+  this.cameras.main.setBounds(0, 0, backgroundWidth, newHeight);
 }
 
 function update() {
@@ -113,7 +110,7 @@ function update() {
     player.setFlipX(false);
 
     // 왼쪽 끝 도달 시 낙하 + 씬 전환
-    if (player.x <= 50) {
+    if (player.x <= 150) {
       this.sceneTransitioning = true;
 
       player.setVelocityX(0);
