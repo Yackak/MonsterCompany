@@ -54,10 +54,9 @@ function create() {
   this.physics.world.setBounds(0, 0, maxX, newHeight);
 
   // 플레이어 생성 (오른쪽 끝)
-  player = this.physics.add.sprite(newWidth - 100, backgroundHeight - 100, 'standing_0');
+  player = this.physics.add.sprite(backgroundWidth - 100, backgroundHeight - 50, 'standing_0');
   player.setScale(0.2);
   player.setCollideWorldBounds(true);
-  player.y = backgroundHeight - 100 - player.displayHeight / 2;
 
   // 디버깅용
   console.log('maxX:', maxX);
