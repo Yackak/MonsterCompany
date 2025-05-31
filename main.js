@@ -59,12 +59,12 @@ function create() {
   this.physics.world.setBounds(0, 0, maxX, newHeight);
 
   // 플레이어 생성
-  player = this.physics.add.sprite(100, 600, 'standing_0');
+  player = this.physics.add.sprite(displayWidth - 100, 600, 'standing_0');
   player.setScale(0.2);
   player.setCollideWorldBounds(true);
 
   // 플레이어를 맵 가장 아래에 위치시키기
-  player.y = background_office.displayHeight - player.displayHeight / 2;
+  player.y = background_office.displayHeight - 100 - player.displayHeight / 2;
 
   cursors = this.input.keyboard.createCursorKeys();
 
@@ -117,7 +117,7 @@ function update() {
     player.setFlipX(true);
 
     // 배경 끝에 도달 시 전투 화면 전환
-    if (player.x >= background_office.displayWidth - 100) {
+    if (player.x <= 100) {
       player.setVelocityX(0);
       enterBattleScene(); // 전투로 진입
     }
