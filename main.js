@@ -38,32 +38,35 @@ function preload() {
 }
 
 function create() {
-  // 배경 이미지 추가
+  // 배경 이미지 로드
   background_office = this.add.image(0, 0, 'background_office').setOrigin(0, 0);
 
-  // 배경 크기 계산 및 리사이즈
-  backgroundWidth = background_office.displayWidth;
-  backgroundHeight = background_office.displayHeight;
-
-  const aspectRatio = backgroundWidth / backgroundHeight;
+  // 배경 리사이즈
   const newHeight = 750;
+  const aspectRatio = background_office.width / background_office.height;
   const newWidth = newHeight * aspectRatio;
-
   background_office.setDisplaySize(newWidth, newHeight);
-  maxX = newWidth * 2;
 
+  // 배경 크기 및 월드 설정
+  backgroundWidth = newWidth;
+  backgroundHeight = newHeight;
+  maxX = newWidth * 2;
   this.physics.world.setBounds(0, 0, maxX, newHeight);
 
   // 플레이어 생성 (오른쪽 끝)
-  player = this.physics.add.sprite(maxX - 100, 600, 'standing_0');
+  player = this.physics.add.sprite(maxX - 100, backgroundHeight - 100, 'standing_0');
   player.setScale(0.2);
   player.setCollideWorldBounds(true);
-  player.y = background_office.displayHeight - 100 - player.displayHeight / 2;
+  player.y = backgroundHeight - 100 - player.displayHeight / 2;
+
+  // 디버깅용
+  console.log('maxX:', maxX);
+  console.log('player.x:', player.x, 'player.y:', player.y);
 
   cursors = this.input.keyboard.createCursorKeys();
-  this.sceneTransitioning = false; // 중복 전환 방지
+  this.sceneTransitioning = false;
 
-  // 애니메이션
+  // 걷기 애니메이션
   this.anims.create({
     key: 'walk',
     frames: [
@@ -80,6 +83,7 @@ function create() {
     repeat: -1
   });
 
+  // 대기 애니메이션
   this.anims.create({
     key: 'idle',
     frames: [
@@ -96,8 +100,9 @@ function create() {
     repeat: -1
   });
 
+  // 카메라
   this.cameras.main.startFollow(player);
-  this.cameras.main.setBounds(0, 0, newWidth, newHeight);
+  this.cameras.main.setBounds(0, 0, maxX, newHeight);
 }
 
 function update() {
@@ -108,12 +113,13 @@ function update() {
     player.anims.play('walk', true);
     player.setFlipX(false);
 
-    // 왼쪽 끝 도달 시 떨어지며 전투 전환
+    // 왼쪽 끝 도달 시 낙하 + 씬 전환
     if (player.x <= 50) {
       this.sceneTransitioning = true;
+
       player.setVelocityX(0);
       this.physics.world.gravity.y = 1000; // 중력 활성화
-      player.setCollideWorldBounds(false); // 바닥 뚫고 떨어지게
+      player.setCollideWorldBounds(false); // 떨어지게 허용
 
       this.time.delayedCall(1000, () => {
         enterBattleScene();
@@ -130,15 +136,4 @@ function update() {
   }
 }
 
-function enterBattleScene() {
-  game.destroy(true);
-
-  const styleTag = document.getElementById('page-style');
-  styleTag.href = 'battle.css';
-
-  document.getElementById('game-container').innerHTML = '';
-
-  const script = document.createElement('script');
-  script.src = 'battle.js';
-  document.body.appendChild(script);
-}
+fu
