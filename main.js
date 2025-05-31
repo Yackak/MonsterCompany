@@ -52,7 +52,7 @@ function create() {
   this.physics.world.setBounds(0, 0, backgroundWidth, newHeight);
 
   // 플레이어 생성 (오른쪽 끝)
-  player = this.physics.add.sprite(backgroundWidth - 100, backgroundHeight - 50, 'standing_0');
+  player = this.physics.add.sprite(backgroundWidth - 500, backgroundHeight - 50, 'standing_0');
   player.setScale(0.3);
   player.setCollideWorldBounds(true);
 
@@ -98,7 +98,7 @@ function create() {
 
   // 카메라
   if((this.camera.x < backgroundWidth - (window.innerWidth/2)) && (this.camera.x) > window.innerWidth/2) this.cameras.main.startFollow(player);
-  this.cameras.main.setBounds(0, 0, backgroundWidth, newHeight);
+  this.cameras.main.setBounds(0, 0, backgroundWidth - window.innerWidth/2, newHeight);
 }
 
 function update() {
