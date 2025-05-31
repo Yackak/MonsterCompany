@@ -97,7 +97,7 @@ function create() {
   });
 
   // 카메라
-  this.cameras.main.startFollow(player);
+  if((this.camera.x < backgroundWidth - (window.innerWidth/2)) && (this.camera.x) > window.innerWidth/2) this.cameras.main.startFollow(player);
   this.cameras.main.setBounds(0, 0, backgroundWidth, newHeight);
 }
 
@@ -110,7 +110,7 @@ function update() {
     player.setFlipX(false);
 
     // 왼쪽 끝 도달 시 낙하 + 씬 전환
-    if (player.x <= 150) {
+    if (player.x <= 700) {
       this.sceneTransitioning = true;
 
       player.setVelocityX(0);
@@ -123,7 +123,7 @@ function update() {
     }
 
   } else if (cursors.right.isDown) {
-    player.setVelocityX(640);
+    if(player.x <= backgroundWidth - 100) player.setVelocityX(640);
     player.anims.play('walk', true);
     player.setFlipX(true);
   } else {
