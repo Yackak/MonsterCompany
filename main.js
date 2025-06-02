@@ -96,11 +96,11 @@ function create() {
     repeat: -1
   });
 
-  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "10:23");
+  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "10:25");
   // 카메라
   //if((this.camera.x < backgroundWidth - (window.innerWidth/2)) && (this.camera.x) > window.innerWidth/2) {
     this.cameras.main.startFollow(player);
-    //this.cameras.main.setBounds(0, 0, backgroundWidth - window.innerWidth/2, newHeight);
+    this.cameras.main.setBounds(0, 0, backgroundWidth - window.innerWidth/2, newHeight);
   
 }
 
@@ -126,7 +126,7 @@ function update() {
     }
 
   } else if (cursors.right.isDown) {
-    if(player.x <= backgroundWidth - 100) player.setVelocityX(640);
+    if(player.x <= backgroundWidth - 200){player.setVelocityX(640);}
     player.anims.play('walk', true);
     player.setFlipX(true);
   } else {
