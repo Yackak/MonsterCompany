@@ -132,5 +132,3 @@ function update() {
     player.anims.play('idle', true);
   }
 }
-
-fu
