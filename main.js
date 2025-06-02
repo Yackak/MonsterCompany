@@ -96,7 +96,7 @@ function create() {
     repeat: -1
   });
 
-  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "10:25");
+  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "10:37");
   // 카메라
   //if((this.camera.x < backgroundWidth - (window.innerWidth/2)) && (this.camera.x) > window.innerWidth/2) {
     this.cameras.main.startFollow(player);
@@ -113,7 +113,7 @@ function update() {
     player.setFlipX(false);
 
     // 왼쪽 끝 도달 시 낙하 + 씬 전환
-    if (player.x <= 150) {
+    if (player.x <= 650) {
       this.sceneTransitioning = true;
 
       player.setVelocityX(0);
