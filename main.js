@@ -96,7 +96,7 @@ function create() {
     repeat: -1
   });
 
-  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth)
+  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth);
   // 카메라
   if((this.camera.x < backgroundWidth - (window.innerWidth/2)) && (this.camera.x) > window.innerWidth/2) this.cameras.main.startFollow(player);
   this.cameras.main.setBounds(0, 0, backgroundWidth - window.innerWidth/2, newHeight);
