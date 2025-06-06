@@ -59,7 +59,7 @@ function create() {
   // 디버깅용
   console.log('player.x:', player.x, 'player.y:', player.y);
   this.add.rectangle(0, 0, newWidth, newHeight, 0xff0000).setOrigin(0, 0).setDepth(-10);
-  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "22:11");
+  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "22:21");
   
   cursors = this.input.keyboard.createCursorKeys();
   this.sceneTransitioning = false;
