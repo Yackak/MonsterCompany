@@ -1,24 +1,21 @@
-class BattleScene extends Phaser.Scene {
+export default class BattleScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'battle' }); // ← 이 key가 중요! 'battle'이어야 함
+    super({ key: 'battle' });
   }
 
   preload() {
-    // 배틀에 필요한 이미지나 리소스 로드
     this.load.image('background_battle', 'assets/background_battle.png');
-    // 캐릭터, 이펙트 등도 여기서 로드
   }
 
   create() {
-    // 배경 띄우기
-    this.add.image(0, 0, 'background_battle').setOrigin(0, 0);
+    console.log("22:39");
 
+    // 배경을 윈도우 크기에 맞춰 리사이즈
+    const bg = this.add.image(0, 0, 'background_battle').setOrigin(0, 0);
+    bg.setDisplaySize(window.innerWidth, window.innerHeight);
 
-    // 디버깅용
-    console.log("21:56");
-    
-    // 예시: 텍스트로 배틀 씬 표시
-    this.add.text(400, 300, 'BATTLE START!', {
+    // 텍스트도 중앙에 위치
+    this.add.text(window.innerWidth / 2, window.innerHeight / 2, 'BATTLE START!', {
       fontSize: '48px',
       color: '#ff0000'
     }).setOrigin(0.5);
@@ -28,5 +25,3 @@ class BattleScene extends Phaser.Scene {
     // 전투 진행 로직
   }
 }
-
-export default BattleScene;
