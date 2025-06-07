@@ -24,6 +24,9 @@ class MainScene extends Phaser.Scene {
   }
 
   create() {
+    //디버깅
+    console.log('22:31');
+    
     background_office = this.add.image(0, 0, 'background_office').setOrigin(0, 0);
 
     const newHeight = 750;
