@@ -59,7 +59,7 @@ function create() {
   // 디버깅용
   console.log('player.x:', player.x, 'player.y:', player.y);
   this.add.rectangle(0, 0, newWidth, newHeight, 0xff0000).setOrigin(0, 0).setDepth(-10);
-  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "22:21");
+  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "21:45");
   
   cursors = this.input.keyboard.createCursorKeys();
   this.sceneTransitioning = false;
@@ -112,7 +112,7 @@ function update() {
     player.setFlipX(false);
 
     // 왼쪽 끝 도달 시 낙하 + 씬 전환
-    if (player.x <= 650) {
+    if (player.x <= 400) {
       this.sceneTransitioning = true;
 
       player.setVelocityX(0);
@@ -132,4 +132,8 @@ function update() {
     player.setVelocityX(0);
     player.anims.play('idle', true);
   }
+}
+
+function enterBattleScene() {
+  this.scene.start('battle'); // 'battle' 씬 시작
 }
