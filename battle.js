@@ -1,33 +1,28 @@
-const battleConfig = {
-  type: Phaser.AUTO,
-  width: window.innerWidth,
-  height: 692,
-  parent: 'game-container',
-  scene: {
-    preload: preloadBattle,
-    create: createBattle,
-    update: updateBattle
+class BattleScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'battle' }); // ← 이 key가 중요! 'battle'이어야 함
   }
-};
 
-const battleGame = new Phaser.Game(battleConfig);
+  preload() {
+    // 배틀에 필요한 이미지나 리소스 로드
+    this.load.image('battle_bg', 'assets/battle_bg.png');
+    // 캐릭터, 이펙트 등도 여기서 로드
+  }
 
-function preloadBattle() {
-  this.load.image('battle_bg', 'assets/background_battle.png');
-  this.load.image('player', 'assets/player.png');
-  this.load.image('enemy', 'assets/enemy.png');
+  create() {
+    // 배경 띄우기
+    this.add.image(0, 0, 'background_battle').setOrigin(0, 0);
+
+    // 예시: 텍스트로 배틀 씬 표시
+    this.add.text(400, 300, 'BATTLE START!', {
+      fontSize: '48px',
+      color: '#ff0000'
+    }).setOrigin(0.5);
+  }
+
+  update() {
+    // 전투 진행 로직
+  }
 }
 
-function createBattle() {
-  this.add.image(0, 0, 'battle_bg').setOrigin(0, 0).setDisplaySize(window.innerWidth, 692);
-
-  this.player = this.add.sprite(200, 500, 'player');
-  this.enemy = this.add.sprite(800, 500, 'enemy');
-
-  // 예시 텍스트
-  this.add.text(50, 30, '전투 시작!', { fontSize: '32px', fill: '#fff' });
-}
-
-function updateBattle() {
-  // 전투 업데이트 로직
-}
+export default BattleScene;
