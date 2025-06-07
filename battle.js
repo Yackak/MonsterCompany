@@ -13,7 +13,7 @@ const battleConfig = {
 const battleGame = new Phaser.Game(battleConfig);
 
 function preloadBattle() {
-  this.load.image('battle_bg', 'assets/battle_background.png');
+  this.load.image('battle_bg', 'assets/background_battle.png');
   this.load.image('player', 'assets/player.png');
   this.load.image('enemy', 'assets/enemy.png');
 }
