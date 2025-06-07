@@ -55,11 +55,6 @@ function create() {
   player = this.physics.add.sprite(backgroundWidth - 1000, backgroundHeight - 50, 'standing_0');
   player.setScale(0.3);
   player.setCollideWorldBounds(true);
-
-  // 디버깅용
-  console.log('player.x:', player.x, 'player.y:', player.y);
-  this.add.rectangle(0, 0, newWidth, newHeight, 0xff0000).setOrigin(0, 0).setDepth(-10);
-  console.log('backgroundWidth: ', backgroundWidth, 'windowWidth: ', window.innerWidth, "21:56");
   
   cursors = this.input.keyboard.createCursorKeys();
   this.sceneTransitioning = false;
