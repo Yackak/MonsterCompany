@@ -112,7 +112,7 @@ function update() {
     player.setFlipX(false);
 
     // 왼쪽 끝 도달 시 낙하 + 씬 전환
-    if (player.x <= 400) {
+    if (player.x <= 250) {
       this.sceneTransitioning = true;
 
       player.setVelocityX(0);
@@ -120,7 +120,7 @@ function update() {
       player.setCollideWorldBounds(false); // 떨어지게 허용
 
       this.time.delayedCall(1000, () => {
-        enterBattleScene();
+        this.scene.start('battle'); // 'battle' 씬 시작
       });
     }
 
@@ -134,6 +134,3 @@ function update() {
   }
 }
 
-function enterBattleScene() {
-  this.scene.start('battle'); // 'battle' 씬 시작
-}
