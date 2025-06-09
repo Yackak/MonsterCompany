@@ -9,6 +9,7 @@ export default class BattleScene extends Phaser.Scene {
 
   preload() {
     this.load.image('background_battle', 'assets/background_battle.png');
+    this.load.image('standing_0', 'assets/standing_0.png');
     this.load.image('glacue_1', 'assets/glacue_1.png');
     this.load.image('glacue_2', 'assets/glacue_2.png');
     this.load.image('glacue_boss', 'assets/glacue_boss.png');
@@ -23,7 +24,7 @@ export default class BattleScene extends Phaser.Scene {
       hp: 100,
       atk: 1,
       speed: 10,
-      sprite: this.add.rectangle(100, 300, 50, 50, 0x00ff00),
+      sprite: this.add.image(100, 300, 'standing_0').setScale(0.5),,
     };
 
     this.enemies = this.generateEnemies(this.stage);
