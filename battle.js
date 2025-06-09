@@ -24,7 +24,7 @@ export default class BattleScene extends Phaser.Scene {
       hp: 100,
       atk: 1,
       speed: 10,
-      sprite: this.add.image(100, 300, 'standing_0').setScale(0.5),,
+      sprite: this.add.image(100, 300, 'standing_0').setScale(0.5)
     };
 
     this.enemies = this.generateEnemies(this.stage);
