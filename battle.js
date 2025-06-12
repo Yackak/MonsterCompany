@@ -102,7 +102,22 @@ export default class BattleScene extends Phaser.Scene {
         this.skillImages.push(img);
       });
       this.updateSkillSelection();
+
+      this.input.keyboard.on('keydown-UP', () => {
+        this.selectedSkillIndex = (this.selectedSkillIndex + skillNames.length - 1) % skillNames.length;
+        this.updateSkillSelection();
+      });
+
+      this.input.keyboard.on('keydown-DOWN', () => {
+        this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
+        this.updateSkillSelection();
+      });
+
+      this.input.keyboard.on('keydown-Z', () => {
+        this.selectSkill(this.selectedSkillIndex);
+      });
     });
+
     this.load.start();
 
     this.input.keyboard.on('keydown-UP', () => {
@@ -136,6 +151,9 @@ export default class BattleScene extends Phaser.Scene {
   updateSkillSelection() {
     this.skillImages.forEach((img, i) => {
       const key = i === this.selectedSkillIndex ? `skill_${i}_on` : `skill_${i}_off`;
+      img.setTexture(key);
+    });
+  }_on` : `skill_${i}_off`;
       img.setTexture(key);
     });
   });
