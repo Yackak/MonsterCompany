@@ -16,46 +16,44 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   create() {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
     const bg = this.add.image(0, 0, 'background_battle').setOrigin(0, 0);
     bg.setDisplaySize(window.innerWidth, window.innerHeight);
 
-  // 중앙 기준값
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 2;
-  
-  // 아군 위치: 왼쪽 20% 지점
-  this.player = {
-    name: 'Hero',
-    hp: 100,
-    atk: 1,
-    speed: 10,
-    sprite: this.add.image(centerX * 0.4, centerY, 'standing_0').setScale(0.5)
-  };
-
+    this.player = {
+      name: 'Hero',
+      hp: 100,
+      atk: 1,
+      speed: 10,
+      sprite: this.add.image(centerX * 0.4, centerY, 'standing_0').setScale(0.5)
+    };
 
     this.enemies = this.generateEnemies(this.stage);
-    this.createSkillMenu();
+    this.createSkillMenu(centerX * 0.4);
   }
 
   generateEnemies(stage) {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
     let config;
     if (stage === 1) config = [1];
     else if (stage === 2) config = [1, 1];
     else if (stage === 3) config = [1, 2, 1];
     else if (stage === 4) config = [3];
 
-    const baseX = centerX * 1.1; // 오른쪽 중앙에서 시작
+    const baseX = centerX * 1.1;
     const gap = 100;
+
     const enemies = config.map((level, idx) => {
-      const x = baseX + idx * gap;
-      const y = centerY;
       let spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
       let hp = level === 3 ? 12 : level === 2 ? 2 : 3;
       let atk = 1;
       let speed = level === 3 ? 8 : level === 2 ? 12 : 14;
       let canSummon = level === 3;
-      let x = 500 + idx * 100;
-      let y = 300;
+      let x = baseX + idx * gap;
+      let y = centerY;
       let sprite = this.add.image(x, y, spriteKey).setScale(0.5).setInteractive();
       sprite.on('pointerdown', () => {
         if (this.rocketPending && !this.rocketUsed && hp > 0) {
@@ -82,10 +80,10 @@ export default class BattleScene extends Phaser.Scene {
     return enemies;
   }
 
-  createSkillMenu() {
+  createSkillMenu(playerX) {
     const skillNames = ['강타', '관통샷', '로켓펀치'];
     skillNames.forEach((name, i) => {
-      const btn = this.add.text(170, 250 + i * 50, name, {
+      const btn = this.add.text(playerX - 60, 250 + i * 50, name, {
         fontSize: '20px',
         backgroundColor: '#222',
         color: '#fff',
@@ -149,12 +147,12 @@ export default class BattleScene extends Phaser.Scene {
 
     const unit = queue.shift();
     if (unit === this.player) {
-      // 아군은 이미 스킬을 썼음 (스킬 클릭 → startBattleTurn() 호출됨)
+      // 아군은 이미 스킬을 썼음
     } else {
       if (unit.canSummon && this.enemies.length < this.maxEnemies) {
         console.log('보스 글라큐가 소환을 시도합니다.');
-        const x = 500 + this.enemies.length * 100;
-        const y = 300;
+        const x = window.innerWidth / 2 * 1.1 + this.enemies.length * 100;
+        const y = window.innerHeight / 2;
         const sprite = this.add.image(x, y, 'glacue_1').setScale(0.5).setInteractive();
         const summoned = {
           name: '글라큐',
