@@ -134,7 +134,6 @@ export default class BattleScene extends Phaser.Scene {
       this.selectSkill(this.selectedSkillIndex);
     });
   }
-    });
 
     this.input.keyboard.on('keydown-DOWN', () => {
       this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
