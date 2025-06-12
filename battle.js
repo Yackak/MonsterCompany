@@ -189,6 +189,54 @@ export default class BattleScene extends Phaser.Scene {
     }
   }
 
+  generateEnemies(stage) {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    let config;
+  
+    if (stage === 1) config = [1];
+    else if (stage === 2) config = [1, 1];
+    else if (stage === 3) config = [1, 2, 1];
+    else if (stage === 4) config = [3];
+  
+    const baseX = centerX * 1.1;
+    const gap = 100;
+  
+    return config.map((level, idx) => {
+      const spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
+      const hp = level === 3 ? 12 : level === 2 ? 2 : 3;
+      const atk = 1;
+      const speed = level === 3 ? 8 : level === 2 ? 12 : 14;
+      const canSummon = level === 3;
+      const x = baseX + idx * gap;
+      const y = centerY;
+  
+      const sprite = this.add.image(x, y, spriteKey).setScale(0.5).setInteractive();
+      sprite.on('pointerdown', () => {
+        if (this.rocketPending && !this.rocketUsed && hp > 0) {
+          this.rocketUsed = true;
+          this.rocketPending = false;
+          const enemy = this.enemies[idx];
+          enemy.hp -= 1;
+          console.log(`🚀 로켓펀치! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
+          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+        }
+      });
+  
+      return {
+        name: '글라큐',
+        stage: level,
+        spriteKey,
+        hp,
+        atk,
+        speed,
+        canSummon,
+        sprite
+      };
+    });
+  }
+
+
   update() {
     // 전투 중 실시간 처리가 필요하면 여기에 작성
   }
