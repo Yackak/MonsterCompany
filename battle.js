@@ -19,13 +19,19 @@ export default class BattleScene extends Phaser.Scene {
     const bg = this.add.image(0, 0, 'background_battle').setOrigin(0, 0);
     bg.setDisplaySize(window.innerWidth, window.innerHeight);
 
-    this.player = {
-      name: 'Hero',
-      hp: 100,
-      atk: 1,
-      speed: 10,
-      sprite: this.add.image(100, 300, 'standing_0').setScale(0.5)
-    };
+  // 중앙 기준값
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  
+  // 아군 위치: 왼쪽 20% 지점
+  this.player = {
+    name: 'Hero',
+    hp: 100,
+    atk: 1,
+    speed: 10,
+    sprite: this.add.image(centerX * 0.4, centerY, 'standing_0').setScale(0.5)
+  };
+
 
     this.enemies = this.generateEnemies(this.stage);
     this.createSkillMenu();
@@ -38,7 +44,11 @@ export default class BattleScene extends Phaser.Scene {
     else if (stage === 3) config = [1, 2, 1];
     else if (stage === 4) config = [3];
 
+    const baseX = centerX * 1.1; // 오른쪽 중앙에서 시작
+    const gap = 100;
     const enemies = config.map((level, idx) => {
+      const x = baseX + idx * gap;
+      const y = centerY;
       let spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
       let hp = level === 3 ? 12 : level === 2 ? 2 : 3;
       let atk = 1;
