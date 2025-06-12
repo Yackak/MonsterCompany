@@ -13,6 +13,11 @@ export default class BattleScene extends Phaser.Scene {
     this.load.image('glacue_1', 'assets/glacue_1.png');
     this.load.image('glacue_2', 'assets/glacue_2.png');
     this.load.image('glacue_boss', 'assets/glacue_boss.png');
+
+    for (let i = 0; i < 3; i++) {
+      this.load.image(`skill_${i}_off`, `assets/skill_${i}_off.png`);
+      this.load.image(`skill_${i}_on`, `assets/skill_${i}_on.png`);
+    }
   }
 
   create() {
@@ -34,106 +39,22 @@ export default class BattleScene extends Phaser.Scene {
     this.createSkillMenu(centerX * 0.4);
   }
 
-  generateEnemies(stage) {
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    let config;
-    if (stage === 1) config = [1];
-    else if (stage === 2) config = [1, 1];
-    else if (stage === 3) config = [1, 2, 1];
-    else if (stage === 4) config = [3];
-
-    const baseX = centerX * 1.1;
-    const gap = 100;
-
-    const enemies = config.map((level, idx) => {
-      let spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
-      let hp = level === 3 ? 12 : level === 2 ? 2 : 3;
-      let atk = 1;
-      let speed = level === 3 ? 8 : level === 2 ? 12 : 14;
-      let canSummon = level === 3;
-      let x = baseX + idx * gap;
-      let y = centerY;
-      let sprite = this.add.image(x, y, spriteKey).setScale(0.5).setInteractive();
-      sprite.on('pointerdown', () => {
-        if (this.rocketPending && !this.rocketUsed && hp > 0) {
-          this.rocketUsed = true;
-          this.rocketPending = false;
-          const enemy = this.enemies[idx];
-          enemy.hp -= 1;
-          console.log(`🚀 로켓펀치! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
-          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-        }
-      });
-      return {
-        name: '글라큐',
-        stage: level,
-        spriteKey,
-        hp,
-        atk,
-        speed,
-        canSummon,
-        sprite,
-      };
-    });
-
-    return enemies;
-  }
-
   createSkillMenu(playerX) {
     const skillNames = ['강타', '관통샷', '로켓펀치'];
-    this.skillButtons = [];
     this.skillImages = [];
     this.selectedSkillIndex = 0;
 
-    skillNames.forEach((name, i) => {
-      const unselectedKey = `skill_${i}_off`;
-      const selectedKey = `skill_${i}_on`;
-
-      this.load.image(unselectedKey, `assets/${unselectedKey}.png`);
-      this.load.image(selectedKey, `assets/${selectedKey}.png`);
+    skillNames.forEach((_, i) => {
+      const key = `skill_${i}_off`;
+      const img = this.add.image(playerX - 60, 250 + i * 60, key).setInteractive().setScale(0.5);
+      img.on('pointerdown', () => this.selectSkill(i));
+      this.skillImages.push(img);
     });
-
-    this.load.once('complete', () => {
-      skillNames.forEach((name, i) => {
-        const key = `skill_${i}_off`;
-        const img = this.add.image(playerX - 60, 250 + i * 60, key).setInteractive().setScale(0.5);
-        img.on('pointerdown', () => this.selectSkill(i));
-        this.skillImages.push(img);
-      });
-      this.updateSkillSelection();
-
-      this.input.keyboard.on('keydown-UP', () => {
-        this.selectedSkillIndex = (this.selectedSkillIndex + skillNames.length - 1) % skillNames.length;
-        this.updateSkillSelection();
-      });
-
-      this.input.keyboard.on('keydown-DOWN', () => {
-        this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
-        this.updateSkillSelection();
-      });
-
-      this.input.keyboard.on('keydown-Z', () => {
-        this.selectSkill(this.selectedSkillIndex);
-      });
-    });
-
-    this.load.start();
 
     this.input.keyboard.on('keydown-UP', () => {
       this.selectedSkillIndex = (this.selectedSkillIndex + skillNames.length - 1) % skillNames.length;
       this.updateSkillSelection();
     });
-
-    this.input.keyboard.on('keydown-DOWN', () => {
-      this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
-      this.updateSkillSelection();
-    });
-
-    this.input.keyboard.on('keydown-Z', () => {
-      this.selectSkill(this.selectedSkillIndex);
-    });
-  }
 
     this.input.keyboard.on('keydown-DOWN', () => {
       this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
@@ -151,11 +72,6 @@ export default class BattleScene extends Phaser.Scene {
     this.skillImages.forEach((img, i) => {
       const key = i === this.selectedSkillIndex ? `skill_${i}_on` : `skill_${i}_off`;
       img.setTexture(key);
-    });
-  }_on` : `skill_${i}_off`;
-      img.setTexture(key);
-    });
-  });
     });
   }
 
