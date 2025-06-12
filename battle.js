@@ -83,23 +83,42 @@ export default class BattleScene extends Phaser.Scene {
   createSkillMenu(playerX) {
     const skillNames = ['강타', '관통샷', '로켓펀치'];
     this.skillButtons = [];
+    this.skillImages = [];
     this.selectedSkillIndex = 0;
 
     skillNames.forEach((name, i) => {
-      const btn = this.add.text(playerX - 60, 250 + i * 50, name, {
-        fontSize: '20px',
-        backgroundColor: '#222',
-        color: '#fff',
-        padding: { x: 10, y: 5 },
-      }).setInteractive();
+      const unselectedKey = `skill_${i}_off`;
+      const selectedKey = `skill_${i}_on`;
 
-      btn.on('pointerdown', () => this.selectSkill(i));
-      this.skillButtons.push(btn);
+      this.load.image(unselectedKey, `assets/${unselectedKey}.png`);
+      this.load.image(selectedKey, `assets/${selectedKey}.png`);
     });
+
+    this.load.once('complete', () => {
+      skillNames.forEach((name, i) => {
+        const key = `skill_${i}_off`;
+        const img = this.add.image(playerX - 60, 250 + i * 60, key).setInteractive().setScale(0.5);
+        img.on('pointerdown', () => this.selectSkill(i));
+        this.skillImages.push(img);
+      });
+      this.updateSkillSelection();
+    });
+    this.load.start();
 
     this.input.keyboard.on('keydown-UP', () => {
       this.selectedSkillIndex = (this.selectedSkillIndex + skillNames.length - 1) % skillNames.length;
       this.updateSkillSelection();
+    });
+
+    this.input.keyboard.on('keydown-DOWN', () => {
+      this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
+      this.updateSkillSelection();
+    });
+
+    this.input.keyboard.on('keydown-Z', () => {
+      this.selectSkill(this.selectedSkillIndex);
+    });
+  }
     });
 
     this.input.keyboard.on('keydown-DOWN', () => {
@@ -115,8 +134,11 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   updateSkillSelection() {
-    this.skillButtons.forEach((btn, i) => {
-      btn.setStyle({ backgroundColor: i === this.selectedSkillIndex ? '#555' : '#222' });
+    this.skillImages.forEach((img, i) => {
+      const key = i === this.selectedSkillIndex ? `skill_${i}_on` : `skill_${i}_off`;
+      img.setTexture(key);
+    });
+  });
     });
   }
 
