@@ -24,10 +24,10 @@ export default class BattleScene extends Phaser.Scene {
 
     this.player = {
       name: 'Hero',
-      hp: 100,
+      hp: 10,
       atk: 1,
       speed: 10,
-      sprite: this.add.image(centerX * 0.4, centerY, 'standing_0').setScale(0.5)
+      sprite: this.add.image(centerX * 0.4, centerY, 'standing_0').setScale(0.3)
     };
 
     this.enemies = this.generateEnemies(this.stage);
@@ -82,6 +82,9 @@ export default class BattleScene extends Phaser.Scene {
 
   createSkillMenu(playerX) {
     const skillNames = ['강타', '관통샷', '로켓펀치'];
+    this.skillButtons = [];
+    this.selectedSkillIndex = 0;
+
     skillNames.forEach((name, i) => {
       const btn = this.add.text(playerX - 60, 250 + i * 50, name, {
         fontSize: '20px',
@@ -90,15 +93,41 @@ export default class BattleScene extends Phaser.Scene {
         padding: { x: 10, y: 5 },
       }).setInteractive();
 
-      btn.on('pointerdown', () => {
-        if (name === '강타') this.useSmash();
-        else if (name === '관통샷') this.usePierce();
-        else if (name === '로켓펀치' && !this.rocketUsed) {
-          this.rocketPending = true;
-          console.log('로켓펀치 대상 선택 대기 중...');
-        }
-      });
+      btn.on('pointerdown', () => this.selectSkill(i));
+      this.skillButtons.push(btn);
     });
+
+    this.input.keyboard.on('keydown-UP', () => {
+      this.selectedSkillIndex = (this.selectedSkillIndex + skillNames.length - 1) % skillNames.length;
+      this.updateSkillSelection();
+    });
+
+    this.input.keyboard.on('keydown-DOWN', () => {
+      this.selectedSkillIndex = (this.selectedSkillIndex + 1) % skillNames.length;
+      this.updateSkillSelection();
+    });
+
+    this.input.keyboard.on('keydown-Z', () => {
+      this.selectSkill(this.selectedSkillIndex);
+    });
+
+    this.updateSkillSelection();
+  }
+
+  updateSkillSelection() {
+    this.skillButtons.forEach((btn, i) => {
+      btn.setStyle({ backgroundColor: i === this.selectedSkillIndex ? '#555' : '#222' });
+    });
+  }
+
+  selectSkill(index) {
+    const name = ['강타', '관통샷', '로켓펀치'][index];
+    if (name === '강타') this.useSmash();
+    else if (name === '관통샷') this.usePierce();
+    else if (name === '로켓펀치' && !this.rocketUsed) {
+      this.rocketPending = true;
+      console.log('로켓펀치 대상 선택 대기 중...');
+    }
   }
 
   useSmash() {
@@ -173,7 +202,7 @@ export default class BattleScene extends Phaser.Scene {
             if (summoned.hp <= 0) summoned.sprite.setVisible(false);
           }
         });
-        this.enemies.push(summoned);
+        this.enemies.unshift(summoned);
         console.log('새로운 글라큐가 소환되었습니다!');
       } else {
         if (this.player.hp > 0) {
