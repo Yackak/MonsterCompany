@@ -28,7 +28,7 @@ export default class BattleScene extends Phaser.Scene {
 
     this.player = {
       name: 'Hero',
-      hp: 10,
+      hp: 15,
       atk: 1,
       speed: 10,
       sprite: this.add.image(centerX * 0.4, centerY, 'standing_0')
@@ -49,7 +49,7 @@ export default class BattleScene extends Phaser.Scene {
       const key = `skill_${i}_off`;
       const img = this.add.image(playerX + 200, 250 + i * 65, key)
         .setInteractive()
-        .setScale(0.4);
+        .setScale(0.3);
       img.on('pointerdown', () => this.selectSkill(i));
       this.skillImages.push(img);
     });
@@ -141,12 +141,11 @@ export default class BattleScene extends Phaser.Scene {
     } else {
       if (unit.canSummon && this.enemies.length < this.maxEnemies) {
         console.log('보스 글라큐가 소환을 시도합니다.');
-
         const boss = this.enemies.find(e => e.stage === 3);
         const bossIndex = this.enemies.indexOf(boss);
         const summonOffset = this.enemies.length - bossIndex - 1;
         const x = boss.sprite.x - 120 - summonOffset * 100;
-        const y = window.innerHeight / 2;
+        const y = boss.sprite.y;
 
         const sprite = this.add.image(x, y, 'glacue_1').setScale(1.5).setInteractive();
         const summoned = {
@@ -160,16 +159,7 @@ export default class BattleScene extends Phaser.Scene {
           sprite
         };
 
-        sprite.on('pointerdown', () => {
-          if (this.rocketPending && !this.rocketUsed && summoned.hp > 0) {
-            this.rocketUsed = true;
-            this.rocketPending = false;
-            summoned.hp -= 1;
-            console.log(`🚀 로켓펀치! 소환된 글라큐에게 1 데미지. 남은 HP: ${summoned.hp}`);
-            if (summoned.hp <= 0) summoned.sprite.setVisible(false);
-          }
-        });
-
+        this.attachRocketEvent(sprite, summoned);
         this.enemies.splice(bossIndex, 0, summoned);
         console.log('새로운 글라큐가 소환되었습니다!');
       } else {
@@ -205,51 +195,81 @@ export default class BattleScene extends Phaser.Scene {
   generateEnemies(stage) {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
-    let config;
 
+    let config;
     if (stage === 1) config = [1];
     else if (stage === 2) config = [1, 1];
     else if (stage === 3) config = [1, 2, 1];
     else if (stage === 4) config = [3];
 
+    const normalEnemies = config.filter(l => l !== 3);
+    const bossExists = config.includes(3);
+
     const baseX = centerX * 1.2;
     const gap = 200;
+    const enemies = [];
 
-    return config.map((level, idx) => {
-      const spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
-      const hp = level === 3 ? 12 : level === 2 ? 2 : 3;
-      const atk = 1;
-      const speed = level === 3 ? 8 : level === 2 ? 12 : 14;
-      const canSummon = level === 3;
+    // 일반 몬스터 생성
+    normalEnemies.forEach((level, idx) => {
+      const spriteKey = level === 2 ? 'glacue_2' : 'glacue_1';
+      const hp = level === 2 ? 2 : 3;
+      const speed = level === 2 ? 12 : 14;
       const x = baseX + idx * gap;
       const y = centerY;
 
       const sprite = this.add.image(x, y, spriteKey).setScale(1.5).setInteractive();
-      sprite.on('pointerdown', () => {
-        if (this.rocketPending && !this.rocketUsed && hp > 0) {
-          this.rocketUsed = true;
-          this.rocketPending = false;
-          const enemy = this.enemies[idx];
-          enemy.hp -= 1;
-          console.log(`🚀 로켓펀치! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
-          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-        }
-      });
-
-      return {
+      const enemy = {
         name: '글라큐',
         stage: level,
         spriteKey,
         hp,
-        atk,
+        atk: 1,
         speed,
-        canSummon,
+        canSummon: false,
         sprite
       };
+
+      this.attachRocketEvent(sprite, enemy);
+      enemies.push(enemy);
+    });
+
+    // 보스 생성 (가장 마지막)
+    if (bossExists) {
+      const x = baseX + normalEnemies.length * gap;
+      const y = centerY;
+      const sprite = this.add.image(x, y, 'glacue_boss').setScale(1.5).setInteractive();
+
+      const boss = {
+        name: '글라큐보스',
+        stage: 3,
+        spriteKey: 'glacue_boss',
+        hp: 12,
+        atk: 1,
+        speed: 8,
+        canSummon: true,
+        sprite
+      };
+
+      this.attachRocketEvent(sprite, boss);
+      enemies.push(boss);
+    }
+
+    return enemies;
+  }
+
+  attachRocketEvent(sprite, enemy) {
+    sprite.on('pointerdown', () => {
+      if (this.rocketPending && !this.rocketUsed && enemy.hp > 0) {
+        this.rocketUsed = true;
+        this.rocketPending = false;
+        enemy.hp -= 1;
+        console.log(`🚀 로켓펀치! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
+        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+      }
     });
   }
 
   update() {
-    // 필요 시 실시간 처리
+    // 실시간 처리 로직 필요시 사용
   }
 }
