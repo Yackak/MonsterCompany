@@ -129,8 +129,15 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     const unit = queue.shift();
+
+    // 💡 죽은 유닛은 행동하지 않고 넘기기
+    if (unit.hp <= 0) {
+      this.executeActions(queue);
+      return;
+    }
+
     if (unit === this.player) {
-      // 아군은 이미 스킬을 썼음
+      // 아군은 이미 스킬을 사용함
     } else {
       if (unit.canSummon && this.enemies.length < this.maxEnemies) {
         console.log('보스 글라큐가 소환을 시도합니다.');
@@ -236,6 +243,6 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   update() {
-    // 전투 중 실시간 처리가 필요하면 여기에 작성
+    // 실시간 처리 필요시 작성
   }
 }
