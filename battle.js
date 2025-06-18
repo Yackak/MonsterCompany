@@ -46,7 +46,7 @@ export default class BattleScene extends Phaser.Scene {
 
     skillNames.forEach((_, i) => {
       const key = `skill_${i}_off`;
-      const img = this.add.image(playerX + 250, 250 + i * 70, key).setInteractive().setScale(0.2);
+      const img = this.add.image(playerX + 200, 250 + i * 65, key).setInteractive().setScale(0.2);
       img.on('pointerdown', () => this.selectSkill(i));
       this.skillImages.push(img);
     });
