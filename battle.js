@@ -13,7 +13,6 @@ export default class BattleScene extends Phaser.Scene {
     this.load.image('glacue_1', 'assets/glacue_1.png');
     this.load.image('glacue_2', 'assets/glacue_2.png');
     this.load.image('glacue_boss', 'assets/glacue_boss.png');
-
     for (let i = 0; i < 3; i++) {
       this.load.image(`skill_${i}_off`, `assets/skill_${i}_off.png`);
       this.load.image(`skill_${i}_on`, `assets/skill_${i}_on.png`);
@@ -32,7 +31,9 @@ export default class BattleScene extends Phaser.Scene {
       hp: 10,
       atk: 1,
       speed: 10,
-      sprite: this.add.image(centerX * 0.4, centerY, 'standing_0').setScale(0.3)
+      sprite: this.add.image(centerX * 0.4, centerY, 'standing_0')
+        .setScale(0.3)
+        .setFlipX(true)
     };
 
     this.enemies = this.generateEnemies(this.stage);
@@ -46,7 +47,9 @@ export default class BattleScene extends Phaser.Scene {
 
     skillNames.forEach((_, i) => {
       const key = `skill_${i}_off`;
-      const img = this.add.image(playerX + 200, 250 + i * 65, key).setInteractive().setScale(0.2);
+      const img = this.add.image(playerX + 200, 250 + i * 65, key)
+        .setInteractive()
+        .setScale(0.4);
       img.on('pointerdown', () => this.selectSkill(i));
       this.skillImages.push(img);
     });
@@ -118,8 +121,7 @@ export default class BattleScene extends Phaser.Scene {
   startBattleTurn() {
     const allUnits = [this.player, ...this.enemies];
     allUnits.sort((a, b) => b.speed - a.speed);
-    const actionQueue = [...allUnits];
-    this.executeActions(actionQueue);
+    this.executeActions([...allUnits]);
   }
 
   executeActions(queue) {
@@ -129,20 +131,23 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     const unit = queue.shift();
-
-    // 💡 죽은 유닛은 행동하지 않고 넘기기
     if (unit.hp <= 0) {
       this.executeActions(queue);
       return;
     }
 
     if (unit === this.player) {
-      // 아군은 이미 스킬을 사용함
+      // 아군은 이미 행동함
     } else {
       if (unit.canSummon && this.enemies.length < this.maxEnemies) {
         console.log('보스 글라큐가 소환을 시도합니다.');
-        const x = window.innerWidth / 2 * 1.1 + this.enemies.length * 100;
+
+        const boss = this.enemies.find(e => e.stage === 3);
+        const bossIndex = this.enemies.indexOf(boss);
+        const summonOffset = this.enemies.length - bossIndex - 1;
+        const x = boss.sprite.x - 120 - summonOffset * 100;
         const y = window.innerHeight / 2;
+
         const sprite = this.add.image(x, y, 'glacue_1').setScale(1.5).setInteractive();
         const summoned = {
           name: '글라큐',
@@ -154,6 +159,7 @@ export default class BattleScene extends Phaser.Scene {
           canSummon: false,
           sprite
         };
+
         sprite.on('pointerdown', () => {
           if (this.rocketPending && !this.rocketUsed && summoned.hp > 0) {
             this.rocketUsed = true;
@@ -163,7 +169,8 @@ export default class BattleScene extends Phaser.Scene {
             if (summoned.hp <= 0) summoned.sprite.setVisible(false);
           }
         });
-        this.enemies.unshift(summoned);
+
+        this.enemies.splice(bossIndex, 0, summoned);
         console.log('새로운 글라큐가 소환되었습니다!');
       } else {
         if (this.player.hp > 0) {
@@ -243,6 +250,6 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   update() {
-    // 실시간 처리 필요시 작성
+    // 필요 시 실시간 처리
   }
 }
