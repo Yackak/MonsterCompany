@@ -205,8 +205,8 @@ export default class BattleScene extends Phaser.Scene {
     else if (stage === 3) config = [1, 2, 1];
     else if (stage === 4) config = [3];
 
-    const baseX = centerX * 1.1;
-    const gap = 100;
+    const baseX = centerX * 1.2;
+    const gap = 200;
 
     return config.map((level, idx) => {
       const spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
