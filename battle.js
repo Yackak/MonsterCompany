@@ -46,7 +46,7 @@ export default class BattleScene extends Phaser.Scene {
 
     skillNames.forEach((_, i) => {
       const key = `skill_${i}_off`;
-      const img = this.add.image(playerX - 60, 250 + i * 60, key).setInteractive().setScale(0.5);
+      const img = this.add.image(playerX + 150, 250 + i * 60, key).setInteractive().setScale(0.4);
       img.on('pointerdown', () => this.selectSkill(i));
       this.skillImages.push(img);
     });
@@ -118,7 +118,6 @@ export default class BattleScene extends Phaser.Scene {
   startBattleTurn() {
     const allUnits = [this.player, ...this.enemies];
     allUnits.sort((a, b) => b.speed - a.speed);
-
     const actionQueue = [...allUnits];
     this.executeActions(actionQueue);
   }
@@ -137,7 +136,7 @@ export default class BattleScene extends Phaser.Scene {
         console.log('보스 글라큐가 소환을 시도합니다.');
         const x = window.innerWidth / 2 * 1.1 + this.enemies.length * 100;
         const y = window.innerHeight / 2;
-        const sprite = this.add.image(x, y, 'glacue_1').setScale(0.5).setInteractive();
+        const sprite = this.add.image(x, y, 'glacue_1').setScale(1.5).setInteractive();
         const summoned = {
           name: '글라큐',
           stage: 0,
@@ -193,15 +192,15 @@ export default class BattleScene extends Phaser.Scene {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
     let config;
-  
+
     if (stage === 1) config = [1];
     else if (stage === 2) config = [1, 1];
     else if (stage === 3) config = [1, 2, 1];
     else if (stage === 4) config = [3];
-  
+
     const baseX = centerX * 1.1;
     const gap = 100;
-  
+
     return config.map((level, idx) => {
       const spriteKey = level === 1 ? 'glacue_1' : level === 2 ? 'glacue_2' : 'glacue_boss';
       const hp = level === 3 ? 12 : level === 2 ? 2 : 3;
@@ -210,8 +209,8 @@ export default class BattleScene extends Phaser.Scene {
       const canSummon = level === 3;
       const x = baseX + idx * gap;
       const y = centerY;
-  
-      const sprite = this.add.image(x, y, spriteKey).setScale(0.5).setInteractive();
+
+      const sprite = this.add.image(x, y, spriteKey).setScale(1.5).setInteractive();
       sprite.on('pointerdown', () => {
         if (this.rocketPending && !this.rocketUsed && hp > 0) {
           this.rocketUsed = true;
@@ -222,7 +221,7 @@ export default class BattleScene extends Phaser.Scene {
           if (enemy.hp <= 0) enemy.sprite.setVisible(false);
         }
       });
-  
+
       return {
         name: '글라큐',
         stage: level,
@@ -235,7 +234,6 @@ export default class BattleScene extends Phaser.Scene {
       };
     });
   }
-
 
   update() {
     // 전투 중 실시간 처리가 필요하면 여기에 작성
