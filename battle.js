@@ -17,6 +17,13 @@ export default class BattleScene extends Phaser.Scene {
       this.load.image(`skill_${i}_off`, `assets/skill_${i}_off.png`);
       this.load.image(`skill_${i}_on`, `assets/skill_${i}_on.png`);
     }
+    this.load.image('smash_0', 'assets/smash_0.png');
+    this.load.image('smash_1', 'assets/smash_1.png');
+    this.load.image('smash_2', 'assets/smash_2.png');
+    this.load.image('pierce_0', 'assets/pierce_0.png');
+    this.load.image('pierce_1', 'assets/pierce_1.png');
+    this.load.image('pierce_2', 'assets/pierce_2.png');
+    this.load.image('pierce_3', 'assets/pierce_3.png');
   }
 
   create() {
@@ -33,7 +40,9 @@ export default class BattleScene extends Phaser.Scene {
       speed: 10,
       sprite: this.add.image(centerX * 0.4, centerY, 'standing_0')
         .setScale(0.3)
-        .setFlipX(true)
+        .setFlipX(true),
+      originalX: centerX * 0.4,
+      originalY: centerY
     };
 
     this.enemies = this.generateEnemies(this.stage);
@@ -84,38 +93,66 @@ export default class BattleScene extends Phaser.Scene {
     else if (name === 'Pierce') this.usePierce();
     else if (name === 'Rocket Punch' && !this.rocketUsed) {
       this.rocketPending = true;
-      console.log('🚀 Rocket Punch: waiting for target selection...');
+      console.log('🚀 로켓 펀치: 대상 선택 대기 중...');
     }
+  }
+
+  showAnimation(frames, x, y, onComplete) {
+    let index = 0;
+    const image = this.add.image(x, y, frames[0]).setScale(1.5);
+    const timer = this.time.addEvent({
+      delay: 100,
+      repeat: frames.length - 1,
+      callback: () => {
+        index++;
+        if (index < frames.length) {
+          image.setTexture(frames[index]);
+        } else {
+          image.destroy();
+          if (onComplete) onComplete();
+        }
+      }
+    });
   }
 
   useSmash() {
     const target = this.enemies.find(e => e.hp > 0);
     if (target) {
-      target.hp -= 2;
-      console.log(`🥊 Smash! Dealt 2 damage to ${target.spriteKey}. HP left: ${target.hp}`);
-      if (target.hp <= 0) target.sprite.setVisible(false);
+      const doDamage = () => {
+        target.hp -= 2;
+        console.log(`🥊 강타! ${target.spriteKey}에게 2 데미지. 남은 HP: ${target.hp}`);
+        if (target.hp <= 0) target.sprite.setVisible(false);
+        this.startBattleTurn();
+      };
+      this.showAnimation(['smash_0', 'smash_1', 'smash_2'], target.sprite.x, target.sprite.y, doDamage);
+    } else {
+      this.startBattleTurn();
     }
-    this.startBattleTurn();
   }
 
   usePierce() {
-    let blocked = false;
-    for (const enemy of this.enemies) {
-      if (enemy.hp <= 0) continue;
-      if (enemy.stage === 2) {
-        blocked = true;
-        console.log('⚠️ Pierce was blocked by glacue_2.');
-        enemy.hp -= 1;
-        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-        break;
+    const frames = ['pierce_0', 'pierce_1', 'pierce_2', 'pierce_3'];
+    const centerY = window.innerHeight / 2;
+    const doDamage = () => {
+      let blocked = false;
+      for (const enemy of this.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (enemy.stage === 2) {
+          blocked = true;
+          console.log('⚠️ 관통샷이 글라큐(2단계)에게 막혔습니다.');
+          enemy.hp -= 1;
+          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+          break;
+        }
+        if (!blocked) {
+          enemy.hp -= 1;
+          console.log(`🔫 관통샷! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
+          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+        }
       }
-      if (!blocked) {
-        enemy.hp -= 1;
-        console.log(`🔫 Pierce! Dealt 1 damage to ${enemy.spriteKey}. HP left: ${enemy.hp}`);
-        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-      }
-    }
-    this.startBattleTurn();
+      this.startBattleTurn();
+    };
+    this.showAnimation(frames, this.player.sprite.x + 100, centerY, doDamage);
   }
 
   startBattleTurn() {
@@ -137,10 +174,10 @@ export default class BattleScene extends Phaser.Scene {
     }
 
     if (unit === this.player) {
-      // Player already acted
+      // 이미 공격함
     } else {
       if (unit.canSummon && this.enemies.length < this.maxEnemies) {
-        console.log('Boss is summoning a new glacue.');
+        console.log('보스가 새로운 글라큐를 소환합니다.');
         const boss = this.enemies.find(e => e.stage === 3);
         const bossIndex = this.enemies.indexOf(boss);
         const summonOffset = this.enemies.length - bossIndex - 1;
@@ -161,11 +198,11 @@ export default class BattleScene extends Phaser.Scene {
 
         this.attachRocketEvent(sprite, summoned);
         this.enemies.splice(bossIndex, 0, summoned);
-        console.log('A new glacue has been summoned!');
+        console.log('새로운 글라큐가 소환되었습니다!');
       } else {
         if (this.player.hp > 0) {
           this.player.hp -= unit.atk;
-          console.log(`glacue attacks Hero for ${unit.atk} damage. Remaining HP: ${this.player.hp}`);
+          console.log(`공격당함: 글라큐가 Hero에게 ${unit.atk} 데미지. 남은 HP: ${this.player.hp}`);
         }
       }
     }
@@ -178,16 +215,16 @@ export default class BattleScene extends Phaser.Scene {
     const enemiesDead = this.enemies.every(e => e.hp <= 0);
 
     if (playerDead) {
-      console.log('%cGAME OVER...', 'color: red; font-size: 24px');
+      console.log('%c게임 오버...', 'color: red; font-size: 24px');
     } else if (enemiesDead) {
-      console.log('%cSTAGE CLEAR!', 'color: green; font-size: 24px');
+      console.log('%c스테이지 클리어!', 'color: green; font-size: 24px');
       this.stage++;
       this.rocketUsed = false;
       if (this.stage <= 4) {
         this.enemies.forEach(e => e.sprite.destroy());
         this.enemies = this.generateEnemies(this.stage);
       } else {
-        console.log('%cALL STAGES CLEARED!', 'color: gold; font-size: 24px');
+        console.log('%c모든 스테이지 클리어!', 'color: gold; font-size: 24px');
       }
     }
   }
@@ -261,13 +298,13 @@ export default class BattleScene extends Phaser.Scene {
         this.rocketUsed = true;
         this.rocketPending = false;
         enemy.hp -= 1;
-        console.log(`🚀 Rocket Punch! Dealt 1 damage to ${enemy.spriteKey}. HP left: ${enemy.hp}`);
+        console.log(`🚀 로켓 펀치! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
         if (enemy.hp <= 0) enemy.sprite.setVisible(false);
       }
     });
   }
 
   update() {
-    // Real-time updates if needed
+    // 필요 시 실시간 업데이트
   }
 }
