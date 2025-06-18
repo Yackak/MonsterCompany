@@ -13,17 +13,9 @@ export default class BattleScene extends Phaser.Scene {
     this.load.image('glacue_1', 'assets/glacue_1.png');
     this.load.image('glacue_2', 'assets/glacue_2.png');
     this.load.image('glacue_boss', 'assets/glacue_boss.png');
-
     for (let i = 0; i < 3; i++) {
       this.load.image(`skill_${i}_off`, `assets/skill_${i}_off.png`);
       this.load.image(`skill_${i}_on`, `assets/skill_${i}_on.png`);
-    }
-
-    for (let i = 0; i <= 2; i++) {
-      this.load.image(`smash_${i}`, `assets/smash_${i}.png`);
-    }
-    for (let i = 0; i <= 3; i++) {
-      this.load.image(`pierce_${i}`, `assets/pierce_${i}.png`);
     }
   }
 
@@ -99,86 +91,183 @@ export default class BattleScene extends Phaser.Scene {
   useSmash() {
     const target = this.enemies.find(e => e.hp > 0);
     if (target) {
-      this.playSmashAnimation(target.sprite.x, target.sprite.y, () => {
-        target.hp -= 2;
-        console.log(`🥊 Smash! Dealt 2 damage to ${target.spriteKey}. HP left: ${target.hp}`);
-        if (target.hp <= 0) target.sprite.setVisible(false);
-        this.startBattleTurn();
-      });
-    } else {
-      this.startBattleTurn();
+      target.hp -= 2;
+      console.log(`🥊 Smash! Dealt 2 damage to ${target.spriteKey}. HP left: ${target.hp}`);
+      if (target.hp <= 0) target.sprite.setVisible(false);
     }
+    this.startBattleTurn();
   }
 
   usePierce() {
     let blocked = false;
-    const livingEnemies = this.enemies.filter(e => e.hp > 0);
-    if (livingEnemies.length === 0) return this.startBattleTurn();
+    for (const enemy of this.enemies) {
+      if (enemy.hp <= 0) continue;
+      if (enemy.stage === 2) {
+        blocked = true;
+        console.log('⚠️ Pierce was blocked by glacue_2.');
+        enemy.hp -= 1;
+        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+        break;
+      }
+      if (!blocked) {
+        enemy.hp -= 1;
+        console.log(`🔫 Pierce! Dealt 1 damage to ${enemy.spriteKey}. HP left: ${enemy.hp}`);
+        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+      }
+    }
+    this.startBattleTurn();
+  }
 
+  startBattleTurn() {
+    const allUnits = [this.player, ...this.enemies];
+    allUnits.sort((a, b) => b.speed - a.speed);
+    this.executeActions([...allUnits]);
+  }
+
+  executeActions(queue) {
+    if (queue.length === 0) {
+      this.checkBattleEnd();
+      return;
+    }
+
+    const unit = queue.shift();
+    if (unit.hp <= 0) {
+      this.executeActions(queue);
+      return;
+    }
+
+    if (unit === this.player) {
+      // Player already acted
+    } else {
+      if (unit.canSummon && this.enemies.length < this.maxEnemies) {
+        console.log('Boss is summoning a new glacue.');
+        const boss = this.enemies.find(e => e.stage === 3);
+        const bossIndex = this.enemies.indexOf(boss);
+        const summonOffset = this.enemies.length - bossIndex - 1;
+        const x = boss.sprite.x - 120 - summonOffset * 100;
+        const y = boss.sprite.y;
+
+        const sprite = this.add.image(x, y, 'glacue_1').setScale(1.5).setInteractive();
+        const summoned = {
+          name: 'glacue',
+          stage: 0,
+          spriteKey: 'glacue_1',
+          hp: 1,
+          atk: 1,
+          speed: 15,
+          canSummon: false,
+          sprite
+        };
+
+        this.attachRocketEvent(sprite, summoned);
+        this.enemies.splice(bossIndex, 0, summoned);
+        console.log('A new glacue has been summoned!');
+      } else {
+        if (this.player.hp > 0) {
+          this.player.hp -= unit.atk;
+          console.log(`glacue attacks Hero for ${unit.atk} damage. Remaining HP: ${this.player.hp}`);
+        }
+      }
+    }
+
+    this.time.delayedCall(500, () => this.executeActions(queue));
+  }
+
+  checkBattleEnd() {
+    const playerDead = this.player.hp <= 0;
+    const enemiesDead = this.enemies.every(e => e.hp <= 0);
+
+    if (playerDead) {
+      console.log('%cGAME OVER...', 'color: red; font-size: 24px');
+    } else if (enemiesDead) {
+      console.log('%cSTAGE CLEAR!', 'color: green; font-size: 24px');
+      this.stage++;
+      this.rocketUsed = false;
+      if (this.stage <= 4) {
+        this.enemies.forEach(e => e.sprite.destroy());
+        this.enemies = this.generateEnemies(this.stage);
+      } else {
+        console.log('%cALL STAGES CLEARED!', 'color: gold; font-size: 24px');
+      }
+    }
+  }
+
+  generateEnemies(stage) {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
-    this.playPierceAnimation(centerX * 0.7, centerY, () => {
-      for (const enemy of this.enemies) {
-        if (enemy.hp <= 0) continue;
-        if (enemy.stage === 2) {
-          blocked = true;
-          console.log('⚠️ Pierce was blocked by glacue_2.');
-          enemy.hp -= 1;
-          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-          break;
-        }
-        if (!blocked) {
-          enemy.hp -= 1;
-          console.log(`🔫 Pierce! Dealt 1 damage to ${enemy.spriteKey}. HP left: ${enemy.hp}`);
-          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-        }
+    let config;
+    if (stage === 1) config = [1];
+    else if (stage === 2) config = [1, 1];
+    else if (stage === 3) config = [1, 2, 1];
+    else if (stage === 4) config = [3];
+
+    const normalEnemies = config.filter(l => l !== 3);
+    const bossExists = config.includes(3);
+
+    const baseX = centerX * 1.2;
+    const gap = 200;
+    const enemies = [];
+
+    normalEnemies.forEach((level, idx) => {
+      const spriteKey = level === 2 ? 'glacue_2' : 'glacue_1';
+      const hp = level === 2 ? 2 : 3;
+      const speed = level === 2 ? 12 : 14;
+      const x = baseX + idx * gap;
+      const y = centerY;
+
+      const sprite = this.add.image(x, y, spriteKey).setScale(1.5).setInteractive();
+      const enemy = {
+        name: 'glacue',
+        stage: level,
+        spriteKey,
+        hp,
+        atk: 1,
+        speed,
+        canSummon: false,
+        sprite
+      };
+
+      this.attachRocketEvent(sprite, enemy);
+      enemies.push(enemy);
+    });
+
+    if (bossExists) {
+      const x = baseX + normalEnemies.length * gap;
+      const y = centerY;
+      const sprite = this.add.image(x, y, 'glacue_boss').setScale(1.5).setInteractive();
+
+      const boss = {
+        name: 'glacue_boss',
+        stage: 3,
+        spriteKey: 'glacue_boss',
+        hp: 12,
+        atk: 1,
+        speed: 8,
+        canSummon: true,
+        sprite
+      };
+
+      this.attachRocketEvent(sprite, boss);
+      enemies.push(boss);
+    }
+
+    return enemies;
+  }
+
+  attachRocketEvent(sprite, enemy) {
+    sprite.on('pointerdown', () => {
+      if (this.rocketPending && !this.rocketUsed && enemy.hp > 0) {
+        this.rocketUsed = true;
+        this.rocketPending = false;
+        enemy.hp -= 1;
+        console.log(`🚀 Rocket Punch! Dealt 1 damage to ${enemy.spriteKey}. HP left: ${enemy.hp}`);
+        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
       }
-      this.startBattleTurn();
     });
   }
 
-  playSmashAnimation(x, y, onComplete) {
-    const frames = ['smash_0', 'smash_1', 'smash_2'];
-    let index = 0;
-    const sprite = this.add.image(x, y, frames[index]).setScale(0.5);
-
-    this.time.addEvent({
-      delay: 100,
-      repeat: frames.length - 1,
-      callback: () => {
-        index++;
-        sprite.setTexture(frames[index]);
-        if (index === frames.length - 1) {
-          this.time.delayedCall(100, () => {
-            sprite.destroy();
-            if (onComplete) onComplete();
-          });
-        }
-      }
-    });
+  update() {
+    // Real-time updates if needed
   }
-
-  playPierceAnimation(x, y, onComplete) {
-    const frames = ['pierce_0', 'pierce_1', 'pierce_2', 'pierce_3'];
-    let index = 0;
-    const sprite = this.add.image(x, y, frames[index]).setScale(0.5);
-
-    this.time.addEvent({
-      delay: 100,
-      repeat: frames.length - 1,
-      callback: () => {
-        index++;
-        sprite.setTexture(frames[index]);
-        if (index === frames.length - 1) {
-          this.time.delayedCall(100, () => {
-            sprite.destroy();
-            if (onComplete) onComplete();
-          });
-        }
-      }
-    });
-  }
-
-  update() {}
 }
