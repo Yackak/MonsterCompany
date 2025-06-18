@@ -13,9 +13,17 @@ export default class BattleScene extends Phaser.Scene {
     this.load.image('glacue_1', 'assets/glacue_1.png');
     this.load.image('glacue_2', 'assets/glacue_2.png');
     this.load.image('glacue_boss', 'assets/glacue_boss.png');
+
     for (let i = 0; i < 3; i++) {
       this.load.image(`skill_${i}_off`, `assets/skill_${i}_off.png`);
       this.load.image(`skill_${i}_on`, `assets/skill_${i}_on.png`);
+    }
+
+    for (let i = 0; i <= 2; i++) {
+      this.load.image(`smash_${i}`, `assets/smash_${i}.png`);
+    }
+    for (let i = 0; i <= 3; i++) {
+      this.load.image(`pierce_${i}`, `assets/pierce_${i}.png`);
     }
   }
 
@@ -41,7 +49,7 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   createSkillMenu(playerX) {
-    const skillNames = ['강타', '관통샷', '로켓펀치'];
+    const skillNames = ['Smash', 'Pierce', 'Rocket Punch'];
     this.skillImages = [];
     this.selectedSkillIndex = 0;
 
@@ -79,197 +87,98 @@ export default class BattleScene extends Phaser.Scene {
   }
 
   selectSkill(index) {
-    const name = ['강타', '관통샷', '로켓펀치'][index];
-    if (name === '강타') this.useSmash();
-    else if (name === '관통샷') this.usePierce();
-    else if (name === '로켓펀치' && !this.rocketUsed) {
+    const name = ['Smash', 'Pierce', 'Rocket Punch'][index];
+    if (name === 'Smash') this.useSmash();
+    else if (name === 'Pierce') this.usePierce();
+    else if (name === 'Rocket Punch' && !this.rocketUsed) {
       this.rocketPending = true;
-      console.log('로켓펀치 대상 선택 대기 중...');
+      console.log('🚀 Rocket Punch: waiting for target selection...');
     }
   }
 
   useSmash() {
     const target = this.enemies.find(e => e.hp > 0);
     if (target) {
-      target.hp -= 2;
-      console.log(`🥊 강타! ${target.spriteKey}에게 2 데미지. 남은 HP: ${target.hp}`);
-      if (target.hp <= 0) target.sprite.setVisible(false);
+      this.playSmashAnimation(target.sprite.x, target.sprite.y, () => {
+        target.hp -= 2;
+        console.log(`🥊 Smash! Dealt 2 damage to ${target.spriteKey}. HP left: ${target.hp}`);
+        if (target.hp <= 0) target.sprite.setVisible(false);
+        this.startBattleTurn();
+      });
+    } else {
+      this.startBattleTurn();
     }
-    this.startBattleTurn();
   }
 
   usePierce() {
     let blocked = false;
-    for (const enemy of this.enemies) {
-      if (enemy.hp <= 0) continue;
-      if (enemy.stage === 2) {
-        blocked = true;
-        console.log('⚠️ 관통샷이 글라큐(2단계)에 막혔습니다.');
-        enemy.hp -= 1;
-        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-        break;
-      }
-      if (!blocked) {
-        enemy.hp -= 1;
-        console.log(`🔫 관통샷! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
-        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
-      }
-    }
-    this.startBattleTurn();
-  }
+    const livingEnemies = this.enemies.filter(e => e.hp > 0);
+    if (livingEnemies.length === 0) return this.startBattleTurn();
 
-  startBattleTurn() {
-    const allUnits = [this.player, ...this.enemies];
-    allUnits.sort((a, b) => b.speed - a.speed);
-    this.executeActions([...allUnits]);
-  }
-
-  executeActions(queue) {
-    if (queue.length === 0) {
-      this.checkBattleEnd();
-      return;
-    }
-
-    const unit = queue.shift();
-    if (unit.hp <= 0) {
-      this.executeActions(queue);
-      return;
-    }
-
-    if (unit === this.player) {
-      // 아군은 이미 행동함
-    } else {
-      if (unit.canSummon && this.enemies.length < this.maxEnemies) {
-        console.log('보스 글라큐가 소환을 시도합니다.');
-        const boss = this.enemies.find(e => e.stage === 3);
-        const bossIndex = this.enemies.indexOf(boss);
-        const summonOffset = this.enemies.length - bossIndex - 1;
-        const x = boss.sprite.x - 120 - summonOffset * 100;
-        const y = boss.sprite.y;
-
-        const sprite = this.add.image(x, y, 'glacue_1').setScale(1.5).setInteractive();
-        const summoned = {
-          name: '글라큐',
-          stage: 0,
-          spriteKey: 'glacue_1',
-          hp: 1,
-          atk: 1,
-          speed: 15,
-          canSummon: false,
-          sprite
-        };
-
-        this.attachRocketEvent(sprite, summoned);
-        this.enemies.splice(bossIndex, 0, summoned);
-        console.log('새로운 글라큐가 소환되었습니다!');
-      } else {
-        if (this.player.hp > 0) {
-          this.player.hp -= unit.atk;
-          console.log(`글라큐가 Hero를 공격합니다: ${unit.atk} damage. 남은 HP: ${this.player.hp}`);
-        }
-      }
-    }
-
-    this.time.delayedCall(500, () => this.executeActions(queue));
-  }
-
-  checkBattleEnd() {
-    const playerDead = this.player.hp <= 0;
-    const enemiesDead = this.enemies.every(e => e.hp <= 0);
-
-    if (playerDead) {
-      console.log('%cGAME OVER...', 'color: red; font-size: 24px');
-    } else if (enemiesDead) {
-      console.log('%cSTAGE CLEAR!', 'color: green; font-size: 24px');
-      this.stage++;
-      this.rocketUsed = false;
-      if (this.stage <= 4) {
-        this.enemies.forEach(e => e.sprite.destroy());
-        this.enemies = this.generateEnemies(this.stage);
-      } else {
-        console.log('%cALL STAGES CLEARED!', 'color: gold; font-size: 24px');
-      }
-    }
-  }
-
-  generateEnemies(stage) {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
-    let config;
-    if (stage === 1) config = [1];
-    else if (stage === 2) config = [1, 1];
-    else if (stage === 3) config = [1, 2, 1];
-    else if (stage === 4) config = [3];
-
-    const normalEnemies = config.filter(l => l !== 3);
-    const bossExists = config.includes(3);
-
-    const baseX = centerX * 1.2;
-    const gap = 200;
-    const enemies = [];
-
-    // 일반 몬스터 생성
-    normalEnemies.forEach((level, idx) => {
-      const spriteKey = level === 2 ? 'glacue_2' : 'glacue_1';
-      const hp = level === 2 ? 2 : 3;
-      const speed = level === 2 ? 12 : 14;
-      const x = baseX + idx * gap;
-      const y = centerY;
-
-      const sprite = this.add.image(x, y, spriteKey).setScale(1.5).setInteractive();
-      const enemy = {
-        name: '글라큐',
-        stage: level,
-        spriteKey,
-        hp,
-        atk: 1,
-        speed,
-        canSummon: false,
-        sprite
-      };
-
-      this.attachRocketEvent(sprite, enemy);
-      enemies.push(enemy);
+    this.playPierceAnimation(centerX * 0.7, centerY, () => {
+      for (const enemy of this.enemies) {
+        if (enemy.hp <= 0) continue;
+        if (enemy.stage === 2) {
+          blocked = true;
+          console.log('⚠️ Pierce was blocked by glacue_2.');
+          enemy.hp -= 1;
+          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+          break;
+        }
+        if (!blocked) {
+          enemy.hp -= 1;
+          console.log(`🔫 Pierce! Dealt 1 damage to ${enemy.spriteKey}. HP left: ${enemy.hp}`);
+          if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+        }
+      }
+      this.startBattleTurn();
     });
-
-    // 보스 생성 (가장 마지막)
-    if (bossExists) {
-      const x = baseX + normalEnemies.length * gap;
-      const y = centerY;
-      const sprite = this.add.image(x, y, 'glacue_boss').setScale(1.5).setInteractive();
-
-      const boss = {
-        name: '글라큐보스',
-        stage: 3,
-        spriteKey: 'glacue_boss',
-        hp: 12,
-        atk: 1,
-        speed: 8,
-        canSummon: true,
-        sprite
-      };
-
-      this.attachRocketEvent(sprite, boss);
-      enemies.push(boss);
-    }
-
-    return enemies;
   }
 
-  attachRocketEvent(sprite, enemy) {
-    sprite.on('pointerdown', () => {
-      if (this.rocketPending && !this.rocketUsed && enemy.hp > 0) {
-        this.rocketUsed = true;
-        this.rocketPending = false;
-        enemy.hp -= 1;
-        console.log(`🚀 로켓펀치! ${enemy.spriteKey}에게 1 데미지. 남은 HP: ${enemy.hp}`);
-        if (enemy.hp <= 0) enemy.sprite.setVisible(false);
+  playSmashAnimation(x, y, onComplete) {
+    const frames = ['smash_0', 'smash_1', 'smash_2'];
+    let index = 0;
+    const sprite = this.add.image(x, y, frames[index]).setScale(0.5);
+
+    this.time.addEvent({
+      delay: 100,
+      repeat: frames.length - 1,
+      callback: () => {
+        index++;
+        sprite.setTexture(frames[index]);
+        if (index === frames.length - 1) {
+          this.time.delayedCall(100, () => {
+            sprite.destroy();
+            if (onComplete) onComplete();
+          });
+        }
       }
     });
   }
 
-  update() {
-    // 실시간 처리 로직 필요시 사용
+  playPierceAnimation(x, y, onComplete) {
+    const frames = ['pierce_0', 'pierce_1', 'pierce_2', 'pierce_3'];
+    let index = 0;
+    const sprite = this.add.image(x, y, frames[index]).setScale(0.5);
+
+    this.time.addEvent({
+      delay: 100,
+      repeat: frames.length - 1,
+      callback: () => {
+        index++;
+        sprite.setTexture(frames[index]);
+        if (index === frames.length - 1) {
+          this.time.delayedCall(100, () => {
+            sprite.destroy();
+            if (onComplete) onComplete();
+          });
+        }
+      }
+    });
   }
+
+  update() {}
 }
