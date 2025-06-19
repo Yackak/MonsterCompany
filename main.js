@@ -1,4 +1,4 @@
-import BattleScene from './battle.js'; // 상대경로 확인 필요
+import BattleScene from './battle/battleScene.js'; // 상대경로 확인 필요
 
 let player;
 let cursors;
@@ -74,6 +74,7 @@ class MainScene extends Phaser.Scene {
   }
 
   update() {
+    this.scene.start('battle');
     if (this.sceneTransitioning) return;
 
     if (cursors.left.isDown) {
