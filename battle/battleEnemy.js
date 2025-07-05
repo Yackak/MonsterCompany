@@ -1,3 +1,5 @@
+import { createHpBar } from './battleUI.js';
+
 export function generateEnemies(scene, stage) {
   const centerX = window.innerWidth / 2;
   const centerY = window.innerHeight / 2;
@@ -28,11 +30,13 @@ export function generateEnemies(scene, stage) {
       stage: level,
       spriteKey,
       hp,
+      maxHp: hp, 
       atk: 1,
       speed,
       canSummon: false,
       sprite
     };
+    createHpBar(scene, enemy);
 
     attachRocketEvent(scene, sprite, enemy);
     enemies.push(enemy);

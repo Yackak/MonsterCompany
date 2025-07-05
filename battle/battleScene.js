@@ -1,4 +1,4 @@
-import { createSkillMenu, updateSkillSelection } from './battleUI.js';
+import { createSkillMenu, updateSkillSelection, createHpBar } from './battleUI.js';
 import { useSmash, usePierce } from './battlePlayer.js';
 import { startBattleTurn } from './battleLogic.js';
 import { generateEnemies, attachRocketEvent } from './battleEnemy.js';
@@ -41,6 +41,7 @@ export default class BattleScene extends Phaser.Scene {
         this.player = {
             name: 'Hero',
             hp: 15,
+            maxHp: 15,
             atk: 1,
             speed: 10,
             sprite: this.add.image(centerX * 0.4, centerY, 'standing_0')
@@ -49,31 +50,33 @@ export default class BattleScene extends Phaser.Scene {
             originalX: centerX * 0.4,
             originalY: centerY
         };
-
         this.enemies = generateEnemies(this, this.stage);
+
         createSkillMenu(this, centerX * 0.4);
+        createHpBar(this, this.player); // ✅ 추가
     }
 
     updateSkillSelection() {
         updateSkillSelection(this);
     }
 
-selectSkill(index) {
-  const name = ['Smash', 'Pierce', 'Rocket Punch'][index];
+    selectSkill(index) {
+        const name = ['Smash', 'Pierce', 'Rocket Punch'][index];
 
-  if (name === 'Smash') {
-    this.animatePlayer((done) => {
-      useSmash(this, done);
-    });
-  } else if (name === 'Pierce') {
-    this.animatePlayer((done) => {
-      usePierce(this, done);
-    });
-  } else if (name === 'Rocket Punch' && !this.rocketUsed) {
-    this.rocketPending = true;
-    console.log('🚀 로켓 펀치: 대상 선택 대기 중...');
-  }
-}
+        if (name === 'Smash') {
+            this.animatePlayer((done) => {
+                useSmash(this, done);
+            });
+        } else if (name === 'Pierce') {
+            this.animatePlayer((done) => {
+                usePierce(this, done);
+            });
+        } else if (name === 'Rocket Punch' && !this.rocketUsed) {
+            this.rocketPending = true;
+            console.log('🚀 로켓 펀치: 대상 선택 대기 중...');
+        }
+        this.toggleSkillMenu();  // 스킬창 닫고 HP 바 표시
+    }
 
 
     startBattleTurn() {
@@ -105,9 +108,9 @@ selectSkill(index) {
         });
     }
 
-generateEnemies() {
-  return generateEnemies(this, this.stage);
-}
+    generateEnemies() {
+        return generateEnemies(this, this.stage);
+    }
 
     showAnimation(frames, targetSprite, onComplete) {
         let index = 0;
@@ -130,3 +133,5 @@ generateEnemies() {
     }
 
 }
+
+

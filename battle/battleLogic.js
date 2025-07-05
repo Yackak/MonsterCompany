@@ -70,4 +70,10 @@ function checkBattleEnd(scene) {
       console.log('%c모든 스테이지 클리어!', 'color: gold; font-size: 24px');
     }
   }
+
+  if (!playerDead && !enemiesDead) {
+    // ✅ 전투가 계속될 경우 → 스킬창 다시 표시
+    scene.toggleSkillMenu?.();  // optional chaining으로 안전하게 호출
+  }
+
 }

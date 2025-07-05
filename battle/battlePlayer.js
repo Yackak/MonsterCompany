@@ -11,7 +11,6 @@ export function useSmash(scene, done) {
     target.hp -= 2;
     console.log(`🥊 강타! ${target.spriteKey}에게 2 데미지. 남은 HP: ${target.hp}`);
     if (target.hp <= 0) target.sprite.setVisible(false);
-
     done(); // 애니메이션 끝난 후 제자리로 복귀
     scene.time.delayedCall(300, () => {
       scene.startBattleTurn();
